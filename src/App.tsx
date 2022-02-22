@@ -14,27 +14,37 @@ function App() {
   const [currMovieId, setCurrMovieId] = useState('');
   const [buttonsDisabled, setButtonsDisabled] = useState<boolean>(false);
 
-  const addEntryHandler = (text: string) => {
-    const newEntry: ListEntry = {
-      id: Math.random().toString(),
-      text,
-    };
-    setMoviesList((prevState) => [...prevState, newEntry]);
-  };
-
-  const getMovieHandler = (id: string) => {
-    const currMovie = moviesList.find((m) => m.id === id);
-    setCurrMovieTitle(currMovie!.text);
-    setCurrMovieId(currMovie!.id);
-    setButtonsDisabled(true);
+  const addEntryHandler = (e: any) => {
+    e.preventDefault();
+    if (currMovieTitle && buttonsDisabled) {
+      setMoviesList(
+        moviesList.map((item) =>
+          item.id === currMovieId ? { ...item, text: currMovieTitle } : item
+        )
+      );
+      setCurrMovieTitle('');
+      setButtonsDisabled(false);
+      //success message
+    } else {
+      setMoviesList((prevState) => [
+        ...prevState,
+        {
+          id: Math.random().toString(),
+          text: currMovieTitle,
+        },
+      ]);
+      //show message success
+      //reset form
+      setCurrMovieTitle('');
+      setButtonsDisabled(false);
+    }
   };
 
   const editEntryHandler = (id: string, title: string) => {
-    const currMovie = moviesList.find((m) => m.id === id);
-    currMovie!.text = title;
-    setMoviesList((prevState) => [...prevState]);
-    setCurrMovieTitle('');
-    setButtonsDisabled(false);
+    const currMovie = moviesList.filter((m) => m.id === id);
+    setCurrMovieTitle(currMovie[0].text);
+    setCurrMovieId(currMovie[0].id);
+    setButtonsDisabled(true);
   };
 
   const deleteEntryHandler = (id: string) => {
@@ -45,14 +55,35 @@ function App() {
     setMoviesList([]);
   };
 
+  const onChangeHandler = (e: any) => {
+    setCurrMovieTitle(e.target.value);
+  };
+
   return (
-    <div id='body' className='flex items-center justify-center w-screen h-screen bg-slate-300'>
+    <div
+      id='body'
+      className='flex items-center justify-center w-screen h-screen bg-slate-300'>
       <div id='main' className='w-[450px] min-h-[200px] bg-white rounded p-6'>
         <h2 className='w-full text-center uppercase'>Movies to watch</h2>
-        <AddEditForm onAddEntry={addEntryHandler} movieId={currMovieId} movieTitle={currMovieTitle} editMode={buttonsDisabled} onEdit={editEntryHandler} />
-        <List listEntries={moviesList} onDelete={deleteEntryHandler} onEdit={getMovieHandler} buttonsVisibility={buttonsDisabled} />
+        <AddEditForm
+          movieId={currMovieId}
+          movieTitle={currMovieTitle}
+          editMode={buttonsDisabled}
+          onEdit={editEntryHandler}
+          submitHandler={addEntryHandler}
+          onChangeHandler={onChangeHandler}
+        />
+        <List
+          listEntries={moviesList}
+          onDelete={deleteEntryHandler}
+          onEdit={editEntryHandler}
+          buttonsVisibility={buttonsDisabled}
+        />
         {moviesList.length > 0 && (
-          <button onClick={deleteAllRecordsHandler} className='block px-2 py-1 mx-auto text-xs bg-red-500 rounded-md' disabled={buttonsDisabled}>
+          <button
+            onClick={deleteAllRecordsHandler}
+            className='block px-2 py-1 mx-auto text-xs bg-red-500 rounded-md'
+            disabled={buttonsDisabled}>
             clear list
           </button>
         )}
